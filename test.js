@@ -11,8 +11,9 @@
   var aok = common ? require("aok") : root.aok
   var eol = common ? require("./") : root.eol
   var isWindows = typeof process != "undefined" && "win32" === process.platform
+  var linebreak = isWindows ? "\r\n" : "\n"
   var meths = ["lf", "cr", "crlf", "auto"]
-  var chars = ["\n", "\r", "\r\n", isWindows ? "\r\n" : "\n"]
+  var chars = ["\n", "\r", "\r\n", linebreak]
   var sample = " " + chars.join() + "text" + chars.join()
 
   aok.prototype.fail = function() {
@@ -25,6 +26,7 @@
   aok("sample contains newlines", contains(sample, "\n") && contains(sample, "\r"))
   aok("returns other strings as is", eol.auto("random") === "random")
   aok("returns empty strings as is", eol.auto("") === "")
+  aok("auto uses platform line break", eol.auto("a\nb") === (isWindows ? "a\r\nb" : "a\nb"))
   aok("whitespace intact", eol.lf(" \t ") === " \t ")
   aok("lf repeat newlines intact", eol.lf("\n\n\r\r") === "\n\n\n\n")
   aok("cr repeat newlines intact", eol.cr("\n\n\r\r") === "\r\r\r\r")
@@ -32,7 +34,7 @@
   aok("lf function coerces to string", String(eol.lf) === "\n")
   aok("crlf function coerces to string", String(eol.crlf) === "\r\n")
   aok("cr function coerces to string", String(eol.cr) === "\r")
-  aok("auto function coerces to string", String(eol.auto) === isWindows ? "\r\n" : "\n")
+  aok("auto function coerces to string", String(eol.auto) === linebreak)
   aok("match none", !eol.match(" ").length)
   aok("match some", eol.match("\n").length)
   aok("match www", eol.match("world\nwide\nweb").length > 1)
@@ -60,10 +62,10 @@
     return eol.auto(sample) === eol[method](sample);
   }) === 2)
 
-  aok("before", eol.lf(eol.before("text")) === "\ntext")
-  aok("before2", eol.lf(eol.before("\ntext\n")) === "\n\ntext\n")
-  aok("after", eol.lf(eol.after("text")) === "text\n")
-  aok("after2", eol.lf(eol.after("\ntext\n")) === "\ntext\n\n")
+  aok("before", eol.before("text") === linebreak + "text")
+  aok("before2", eol.before("\ntext\n") === linebreak + "\ntext\n")
+  aok("after", eol.after("text") === "text" + linebreak)
+  aok("after2", eol.after("\ntext\n") === "\ntext\n" + linebreak)
 
   aok.log("All tests passed =)")
 }(this);
